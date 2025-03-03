@@ -36,6 +36,7 @@ sequenceDiagram
   order_database-->>-order_service: order saved
   order_service-->>-client: order created
 ```
+---
 
 <h4>Delete order</h4>
 
@@ -44,17 +45,17 @@ sequenceDiagram
     client->>+order_service: DELETE /orders/:id
     order_service->>+order_database: find order by ID
     order_database->>-order_service: return order
-    order_service->>+redis_database: Try lock for order and invoice by it's respective ID
-    redis_database-->>-order_service: locks resource
+    order_service->>+lock_database: Try lock for order and invoice by it's respective ID
+    lock_database-->>-order_service: locks resource
     order_service->>+invoice_service: DELETE /invoices/:id
-    invoice_service->>+redis_database: Checks if invoice is locked
-    redis_database-->>-invoice_service: if invoice is locked, continue
+    invoice_service->>+lock_database: Checks if invoice is locked
+    lock_database-->>-invoice_service: if invoice is locked, continue
     invoice_service->>+invoice_database: deletes invoice
     invoice_database-->>-invoice_service: invoice deleted
     invoice_service-->>-order_service: invoice deleted
     order_service->>+order_database: delete order 
     order_database-->>-order_service: order deleted
-    order_service->>+redis_database: remove locks
-    redis_database-->>-order_service: locks removed
+    order_service->>+lock_database: remove locks
+    lock_database-->>-order_service: locks removed
     order_service-->>-client: order deleted
 ```
