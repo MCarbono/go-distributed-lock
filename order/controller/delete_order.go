@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"context"
 	"database/sql"
 	"distributed-lock/order/postgres"
 	"fmt"
@@ -69,13 +68,4 @@ func (c Order) DeleteOrder(ctx *gin.Context) {
 	}
 	time.Sleep(5 * time.Second)
 	ctx.JSON(http.StatusNoContent, nil)
-}
-
-func (c Order) releaseLocks(ctx context.Context, order postgres.OrderModel) {
-	if err := c.lockManager.ReleaseLock(ctx, order.ID); err != nil {
-		fmt.Printf("unlocking order failed: %v\n", err)
-	}
-	if err := c.lockManager.ReleaseLock(ctx, order.InvoiceID); err != nil {
-		fmt.Printf("unlocking invoice failed: %v\n", err)
-	}
 }
