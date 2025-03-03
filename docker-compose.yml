@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  order-postgres:
+    image: postgres:16-alpine
+    container_name: order-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order-postgres
+    volumes:
+      - order-postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  invoice-postgres:
+    image: postgres:16-alpine
+    container_name: invoice-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: invoice-postgres
+    volumes:
+      - invoice-postgres:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+
+  adminer:
+    image: adminer
+    environment:
+      ADMINER_DESIGN: dracula
+    ports:
+    - 3333:8080
+
+
+volumes:
+  redis_data:
+    driver: local
+  order-postgres:
+  invoice-postgres:
+
