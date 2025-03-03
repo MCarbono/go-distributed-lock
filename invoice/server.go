@@ -14,5 +14,6 @@ func newRouter(c controller.Invoice) *gin.Engine {
 	})
 	r.POST("/invoices", c.CreateInvoice)
 	r.DELETE("/invoices/:id", c.DeleteInvoice)
+	r.PATCH("/invoices/:id", c.UpdateInvoice)
 	return r
 }
