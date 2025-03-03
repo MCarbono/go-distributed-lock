@@ -29,7 +29,7 @@ func (c Order) DeleteOrder(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errOutput{Err: err.Error(), Message: "could not process request. try again in a few moments"})
 		return
 	}
-	invoiceLock, err := c.lockManager.AcquireLock(ctx, "650581f0-a9a4-49e5-9e6d-b05e2dc56dc8")
+	invoiceLock, err := c.lockManager.AcquireLock(ctx, order.InvoiceID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errOutput{Err: err.Error(), Message: "could not process request. try again in a few moments"})
 		return
@@ -38,7 +38,7 @@ func (c Order) DeleteOrder(ctx *gin.Context) {
 		ctx.JSON(http.StatusLocked, errOutput{Message: "the resource you try to modify is currently blocked. Try again in a few moments"})
 		return
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, fmt.Sprintf("http://localhost:3001/invoices/%s", "650581f0-a9a4-49e5-9e6d-b05e2dc56dc8"), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, fmt.Sprintf("http://localhost:3001/invoices/%s", order.InvoiceID), nil)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errOutput{Err: err.Error(), Message: "error creating the request to the invoice service"})
 		return
