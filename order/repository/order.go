@@ -13,7 +13,7 @@ import (
 type Order interface {
 	Create(ctx context.Context, order postgres.OrderModel) error
 	FindByID(ctx context.Context, ID string) (postgres.OrderModel, error)
-	Update(ctx context.Context, input OrderUpdate) error
+	Update(ctx context.Context, order postgres.OrderModel) error
 	Delete(ctx context.Context, order postgres.OrderModel) error
 }
 
@@ -78,7 +78,19 @@ func (r *OrderDB) FindByID(ctx context.Context, ID string) (postgres.OrderModel,
 	return order, nil
 }
 
-func (r *OrderDB) Update(ctx context.Context, input OrderUpdate) error {
+func (r *OrderDB) Update(ctx context.Context, order postgres.OrderModel) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE orders SET
+		status = $1,
+		quantity = $2,
+		value = $3,
+		total = $4,
+		updated_at = $5
+		WHERE id = $6
+	`, order.Status, order.Quantity, order.Value, order.Total, order.UpdatedAt, order.ID)
+	if err != nil {
+		return fmt.Errorf("invoiceDB.Delete failed: %w", err)
+	}
 	return nil
 }
 

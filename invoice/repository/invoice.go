@@ -17,7 +17,7 @@ var (
 type Invoice interface {
 	Create(ctx context.Context, invoice postgres.InvoiceModel) error
 	FindByID(ctx context.Context, ID string) (postgres.InvoiceModel, error)
-	Update(ctx context.Context, ID string) error
+	Update(ctx context.Context, invoice postgres.InvoiceModel) error
 	Delete(ctx context.Context, invoice postgres.InvoiceModel) error
 }
 
@@ -68,8 +68,17 @@ func (r InvoiceDB) FindByID(ctx context.Context, ID string) (postgres.InvoiceMod
 	return invoice, nil
 }
 
-func (r InvoiceDB) Update(ctx context.Context, ID string) error {
-
+func (r InvoiceDB) Update(ctx context.Context, invoice postgres.InvoiceModel) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE invoices SET
+		status = $1,
+		total = $2,
+		updated_at = $3
+		WHERE id = $4
+	`, invoice.Status, invoice.Total, invoice.UpdatedAt, invoice.ID)
+	if err != nil {
+		return fmt.Errorf("invoiceDB.update failed: %w", err)
+	}
 	return nil
 }
 
