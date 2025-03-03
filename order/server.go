@@ -14,5 +14,6 @@ func newRouter(controller controller.Order) *gin.Engine {
 	})
 	r.POST("/orders", controller.CreateOrder)
 	r.DELETE("/orders/:id", controller.DeleteOrder)
+	r.PATCH("/orders/:id", controller.UpdateOrder)
 	return r
 }
