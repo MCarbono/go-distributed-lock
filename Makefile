@@ -2,7 +2,7 @@
 
 
 run:
-	go run main.go
+	go run main.go --env=local
 
 infra:
 	docker-compose up -d

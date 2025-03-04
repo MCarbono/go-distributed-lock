@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"distributed-lock/boot"
+	"distributed-lock/config"
 	"errors"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,7 +14,12 @@ import (
 	"time"
 )
 
+var (
+	env = flag.String("env", "local", "used to know what environment the project is running")
+)
+
 func main() {
+	flag.Parse()
 	orderService := http.Server{Addr: ":3000"}
 	invoiceService := http.Server{Addr: ":3001"}
 
@@ -52,7 +59,20 @@ func main() {
 }
 
 func newOrderServiceRouter(ch chan<- error, service *http.Server) {
-	router, err := boot.Order()
+	cfg := config.Config{
+		Database: config.RelationalDatabase{
+			Host:     "localhost",
+			Port:     "5432",
+			User:     "user",
+			Password: "password",
+			Name:     "order-postgres",
+		},
+		NonRelationalDatabase: config.NonRelationalDatabase{
+			Host: "localhost",
+			Port: "6379",
+		},
+	}
+	router, err := boot.Order(cfg)
 	if err != nil {
 		ch <- err
 		return
@@ -69,7 +89,20 @@ func newOrderServiceRouter(ch chan<- error, service *http.Server) {
 }
 
 func newInvoiceServiceRouter(ch chan<- error, service *http.Server) {
-	router, err := boot.Invoice()
+	cfg := config.Config{
+		Database: config.RelationalDatabase{
+			Host:     "localhost",
+			Port:     "5433",
+			User:     "user",
+			Password: "password",
+			Name:     "invoice-postgres",
+		},
+		NonRelationalDatabase: config.NonRelationalDatabase{
+			Host: "localhost",
+			Port: "6379",
+		},
+	}
+	router, err := boot.Invoice(cfg)
 	if err != nil {
 		ch <- err
 		return

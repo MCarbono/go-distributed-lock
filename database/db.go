@@ -1,8 +1,9 @@
-package invoice
+package database
 
 import (
 	"context"
 	"database/sql"
+	"distributed-lock/config"
 	"embed"
 	"errors"
 	"fmt"
@@ -15,17 +16,22 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func OpenDBInvoice() (*sqlx.DB, error) {
+func OpenDB(cfg config.RelationalDatabase, migrations embed.FS) (*sqlx.DB, error) {
 	db, err := sql.Open("postgres", fmt.Sprintf(
 		"host=%s port=%s user=%s dbname=%s password=%s sslmode=disable connect_timeout=10",
-		"localhost",
-		"5433",
-		"user",
-		"invoice-postgres",
-		"password"),
+		cfg.Host,
+		cfg.Port,
+		cfg.User,
+		cfg.Name,
+		cfg.Password),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("opening connection: %w", err)
+	}
+
+	err = Migrate(db, migrations)
+	if err != nil {
+		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -35,20 +41,11 @@ func OpenDBInvoice() (*sqlx.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("pinging: %w", err)
 	}
-
-	err = MigrateInvoice(db)
-	if err != nil {
-		return nil, err
-	}
-
 	return sqlx.NewDb(db, "postgres"), nil
 }
 
-//go:embed migrations/*.sql
-var migrationsFS embed.FS
-
-func MigrateInvoice(db *sql.DB) error {
-	fs, err := iofs.New(migrationsFS, "migrations")
+func Migrate(db *sql.DB, migrations embed.FS) error {
+	fs, err := iofs.New(migrations, "migrations")
 	if err != nil {
 		return fmt.Errorf("creating iofs driver: %w", err)
 	}

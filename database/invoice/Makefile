@@ -4,14 +4,14 @@ export POSTGRES_URL="postgres://user:password@localhost:5433/invoice-postgres?ss
 .PHONY: migration-create
 migration-create:
 	@echo "Creating a new migration..."
-	@go run github.com/golang-migrate/migrate/v4/cmd/migrate create -ext sql -dir postgres/migrations -seq $(name)
+	@go run github.com/golang-migrate/migrate/v4/cmd/migrate create -ext sql -dir ./migrations -seq $(name)
 
 ## run all migrations. Usage `make migrate-up db_path="postgres://user:password@localhost:5432/dbname?sslmode=disable"`
 .ONESHELL:
 .PHONY: migrate-up
 migrate-up:
 	go run --tags postgres github.com/golang-migrate/migrate/v4/cmd/migrate \
-		-path=./postgres/migrations \
+		-path=./migrations \
 		-database=$(POSTGRES_URL) \
 		-verbose up
 
@@ -20,6 +20,6 @@ migrate-up:
 .PHONY: migrate-down
 migrate-down:
 	go run --tags postgres github.com/golang-migrate/migrate/v4/cmd/migrate \
-		-path=./postgres/migrations \
+		-path=./migrations \
 		-database=$(POSTGRES_URL) \
 		-verbose down
