@@ -1,4 +1,4 @@
-package database
+package invoice
 
 import (
 	"context"
@@ -36,7 +36,7 @@ func OpenDBInvoice() (*sqlx.DB, error) {
 		return nil, fmt.Errorf("pinging: %w", err)
 	}
 
-	err = Migrate(db)
+	err = MigrateInvoice(db)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func OpenDBInvoice() (*sqlx.DB, error) {
 //go:embed migrations/*.sql
 var migrationsFS embed.FS
 
-func Migrate(db *sql.DB) error {
+func MigrateInvoice(db *sql.DB) error {
 	fs, err := iofs.New(migrationsFS, "migrations")
 	if err != nil {
 		return fmt.Errorf("creating iofs driver: %w", err)

@@ -3,8 +3,8 @@ package controller
 import (
 	"context"
 	"distributed-lock/locker"
-	"distributed-lock/order/postgres"
-	"distributed-lock/order/repository"
+	"distributed-lock/model"
+	"distributed-lock/repository"
 	"fmt"
 	"net/http"
 )
@@ -28,7 +28,7 @@ type errOutput struct {
 	Message string `json:"message"`
 }
 
-func (c Order) releaseLocks(ctx context.Context, order postgres.OrderModel) {
+func (c Order) releaseLocks(ctx context.Context, order model.OrderModel) {
 	if err := c.lockManager.ReleaseLock(ctx, order.ID); err != nil {
 		fmt.Printf("unlocking order failed: %v\n", err)
 	}

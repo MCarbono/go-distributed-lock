@@ -1,7 +1,7 @@
-package order
+package boot
 
 import (
-	"distributed-lock/order/controller"
+	"distributed-lock/controller"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

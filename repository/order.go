@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"distributed-lock/order/postgres"
+	"distributed-lock/model"
 	"errors"
 	"fmt"
 
@@ -11,10 +11,10 @@ import (
 )
 
 type Order interface {
-	Create(ctx context.Context, order postgres.OrderModel) error
-	FindByID(ctx context.Context, ID string) (postgres.OrderModel, error)
-	Update(ctx context.Context, order postgres.OrderModel) error
-	Delete(ctx context.Context, order postgres.OrderModel) error
+	Create(ctx context.Context, order model.OrderModel) error
+	FindByID(ctx context.Context, ID string) (model.OrderModel, error)
+	Update(ctx context.Context, order model.OrderModel) error
+	Delete(ctx context.Context, order model.OrderModel) error
 }
 
 type OrderUpdate struct {
@@ -37,7 +37,7 @@ func NewOrderDB(db *sqlx.DB) OrderDB {
 	}
 }
 
-func (r *OrderDB) Create(ctx context.Context, order postgres.OrderModel) error {
+func (r *OrderDB) Create(ctx context.Context, order model.OrderModel) error {
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO orders (
 			id,
@@ -61,8 +61,8 @@ func (r *OrderDB) Create(ctx context.Context, order postgres.OrderModel) error {
 	return nil
 }
 
-func (r *OrderDB) FindByID(ctx context.Context, ID string) (postgres.OrderModel, error) {
-	var order postgres.OrderModel
+func (r *OrderDB) FindByID(ctx context.Context, ID string) (model.OrderModel, error) {
+	var order model.OrderModel
 	err := r.db.GetContext(ctx, &order,
 		`
 		SELECT id, user_id, invoice_id, status, item_id, quantity, value, total, created_at, updated_at, deleted_at
@@ -71,14 +71,14 @@ func (r *OrderDB) FindByID(ctx context.Context, ID string) (postgres.OrderModel,
 		`, ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return postgres.OrderModel{}, ErrOrderNotFound
+			return model.OrderModel{}, ErrOrderNotFound
 		}
-		return postgres.OrderModel{}, fmt.Errorf("orderDB.FindByID failed: %w", err)
+		return model.OrderModel{}, fmt.Errorf("orderDB.FindByID failed: %w", err)
 	}
 	return order, nil
 }
 
-func (r *OrderDB) Update(ctx context.Context, order postgres.OrderModel) error {
+func (r *OrderDB) Update(ctx context.Context, order model.OrderModel) error {
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE orders SET
 		status = $1,
@@ -94,7 +94,7 @@ func (r *OrderDB) Update(ctx context.Context, order postgres.OrderModel) error {
 	return nil
 }
 
-func (r *OrderDB) Delete(ctx context.Context, order postgres.OrderModel) error {
+func (r *OrderDB) Delete(ctx context.Context, order model.OrderModel) error {
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE orders SET
 		status = $1,

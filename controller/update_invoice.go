@@ -2,7 +2,7 @@ package controller
 
 import (
 	"distributed-lock/model"
-	"distributed-lock/order/repository"
+	"distributed-lock/repository"
 	"errors"
 	"fmt"
 	"net/http"

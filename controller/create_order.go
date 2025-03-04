@@ -2,7 +2,7 @@ package controller
 
 import (
 	"bytes"
-	"distributed-lock/order/postgres"
+	"distributed-lock/model"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -54,11 +54,11 @@ func (c Order) CreateOrder(ctx *gin.Context) {
 		ctx.JSON(http.StatusFailedDependency, errOutput{Err: err.Error(), Message: "error converting response body to JSON from invoice service"})
 		return
 	}
-	order := postgres.OrderModel{
+	order := model.OrderModel{
 		ID:        uuid.NewString(),
 		UserID:    body.UserID,
 		InvoiceID: invoiceOutput.ID,
-		Status:    postgres.OrderStatusCreated,
+		Status:    model.OrderStatusCreated,
 		ItemID:    body.ItemID,
 		Quantity:  body.Quantity,
 		Value:     body.Value,

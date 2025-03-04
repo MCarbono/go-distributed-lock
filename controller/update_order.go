@@ -2,7 +2,7 @@ package controller
 
 import (
 	"bytes"
-	"distributed-lock/order/postgres"
+	"distributed-lock/model"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -45,7 +45,7 @@ func (c Order) UpdateOrder(ctx *gin.Context) {
 		ctx.JSON(http.StatusLocked, errOutput{Message: "the resource you try to modify is currently blocked. Try again in a few moments"})
 		return
 	}
-	if order.Status == postgres.OrderStatusDeleted {
+	if order.Status == model.OrderStatusDeleted {
 		ctx.JSON(http.StatusUnprocessableEntity, errOutput{Err: "order_cancelled", Message: "order is cancelled already"})
 		return
 	}
@@ -87,7 +87,7 @@ func (c Order) UpdateOrder(ctx *gin.Context) {
 		return
 	}
 	order.UpdatedAt = input.UpdateTime.UTC()
-	order.Status = postgres.OrderStatusUpdated
+	order.Status = model.OrderStatusUpdated
 	err = c.repo.Update(ctx, order)
 	if err != nil {
 		//TODO - undo update invoice

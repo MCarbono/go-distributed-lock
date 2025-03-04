@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"distributed-lock/order"
+	"distributed-lock/boot"
 	"errors"
 	"fmt"
 	"net/http"
@@ -52,7 +52,7 @@ func main() {
 }
 
 func newOrderServiceRouter(ch chan<- error, service *http.Server) {
-	router, err := order.Boot()
+	router, err := boot.Order()
 	if err != nil {
 		ch <- err
 		return
@@ -69,7 +69,7 @@ func newOrderServiceRouter(ch chan<- error, service *http.Server) {
 }
 
 func newInvoiceServiceRouter(ch chan<- error, service *http.Server) {
-	router, err := order.BootInvoice()
+	router, err := boot.Invoice()
 	if err != nil {
 		ch <- err
 		return

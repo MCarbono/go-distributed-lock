@@ -1,11 +1,11 @@
-package order
+package boot
 
 import (
-	database "distributed-lock/database/invoice"
+	"distributed-lock/controller"
+	invoiceDatabase "distributed-lock/database/invoice"
+	orderDatabase "distributed-lock/database/order"
 	"distributed-lock/locker"
-	"distributed-lock/order/controller"
-	"distributed-lock/order/postgres"
-	"distributed-lock/order/repository"
+	"distributed-lock/repository"
 	"fmt"
 	"net/http"
 
@@ -13,8 +13,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func Boot() (*gin.Engine, error) {
-	db, err := postgres.OpenDB()
+func Order() (*gin.Engine, error) {
+	db, err := orderDatabase.OpenDB()
 	if err != nil {
 		return nil, fmt.Errorf("failed open database: %w", err)
 	}
@@ -28,8 +28,8 @@ func Boot() (*gin.Engine, error) {
 	return newRouter(controller), nil
 }
 
-func BootInvoice() (*gin.Engine, error) {
-	db, err := database.OpenDBInvoice()
+func Invoice() (*gin.Engine, error) {
+	db, err := invoiceDatabase.OpenDBInvoice()
 	if err != nil {
 		return nil, fmt.Errorf("failed open database: %w", err)
 	}

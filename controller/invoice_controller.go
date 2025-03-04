@@ -2,7 +2,7 @@ package controller
 
 import (
 	"distributed-lock/locker"
-	"distributed-lock/order/repository"
+	"distributed-lock/repository"
 )
 
 type Invoice struct {

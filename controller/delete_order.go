@@ -2,7 +2,7 @@ package controller
 
 import (
 	"database/sql"
-	"distributed-lock/order/postgres"
+	"distributed-lock/model"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,7 +18,7 @@ func (c Order) DeleteOrder(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errOutput{Err: err.Error()})
 		return
 	}
-	if order.Status == postgres.OrderStatusDeleted {
+	if order.Status == model.OrderStatusDeleted {
 		ctx.JSON(http.StatusNoContent, nil)
 		return
 	}
@@ -59,7 +59,7 @@ func (c Order) DeleteOrder(ctx *gin.Context) {
 	}
 	order.DeletedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
 	order.UpdatedAt = time.Now().UTC()
-	order.Status = postgres.OrderStatusDeleted
+	order.Status = model.OrderStatusDeleted
 	err = c.repo.Delete(ctx, order)
 	if err != nil {
 		//TODO - undo cancelation on invoice service
