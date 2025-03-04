@@ -1,4 +1,4 @@
-package postgres
+package database
 
 import (
 	"context"
@@ -48,9 +48,6 @@ func OpenDBInvoice() (*sqlx.DB, error) {
 var migrationsFS embed.FS
 
 func Migrate(db *sql.DB) error {
-	if db == nil {
-		fmt.Println("aq")
-	}
 	fs, err := iofs.New(migrationsFS, "migrations")
 	if err != nil {
 		return fmt.Errorf("creating iofs driver: %w", err)

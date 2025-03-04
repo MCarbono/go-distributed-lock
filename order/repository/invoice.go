@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"distributed-lock/invoice/postgres"
+	"distributed-lock/model"
 	"errors"
 	"fmt"
 
@@ -15,10 +15,10 @@ var (
 )
 
 type Invoice interface {
-	Create(ctx context.Context, invoice postgres.InvoiceModel) error
-	FindByID(ctx context.Context, ID string) (postgres.InvoiceModel, error)
-	Update(ctx context.Context, invoice postgres.InvoiceModel) error
-	Delete(ctx context.Context, invoice postgres.InvoiceModel) error
+	Create(ctx context.Context, invoice model.InvoiceModel) error
+	FindByID(ctx context.Context, ID string) (model.InvoiceModel, error)
+	Update(ctx context.Context, invoice model.InvoiceModel) error
+	Delete(ctx context.Context, invoice model.InvoiceModel) error
 }
 
 type InvoiceDB struct {
@@ -31,7 +31,7 @@ func NewInvoiceDB(db *sqlx.DB) InvoiceDB {
 	}
 }
 
-func (r InvoiceDB) Create(ctx context.Context, invoice postgres.InvoiceModel) error {
+func (r InvoiceDB) Create(ctx context.Context, invoice model.InvoiceModel) error {
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO invoices (
 			id,
@@ -50,8 +50,8 @@ func (r InvoiceDB) Create(ctx context.Context, invoice postgres.InvoiceModel) er
 	return nil
 }
 
-func (r InvoiceDB) FindByID(ctx context.Context, ID string) (postgres.InvoiceModel, error) {
-	var invoice postgres.InvoiceModel
+func (r InvoiceDB) FindByID(ctx context.Context, ID string) (model.InvoiceModel, error) {
+	var invoice model.InvoiceModel
 	err := r.db.GetContext(ctx, &invoice,
 		`
 		SELECT id, user_id, status, total, created_at, updated_at, deleted_at
@@ -61,14 +61,14 @@ func (r InvoiceDB) FindByID(ctx context.Context, ID string) (postgres.InvoiceMod
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return postgres.InvoiceModel{}, ErrInvoiceNotFound
+			return model.InvoiceModel{}, ErrInvoiceNotFound
 		}
-		return postgres.InvoiceModel{}, fmt.Errorf("invoiceDB.FindByID failed: %w", err)
+		return model.InvoiceModel{}, fmt.Errorf("invoiceDB.FindByID failed: %w", err)
 	}
 	return invoice, nil
 }
 
-func (r InvoiceDB) Update(ctx context.Context, invoice postgres.InvoiceModel) error {
+func (r InvoiceDB) Update(ctx context.Context, invoice model.InvoiceModel) error {
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE invoices SET
 		status = $1,
@@ -82,7 +82,7 @@ func (r InvoiceDB) Update(ctx context.Context, invoice postgres.InvoiceModel) er
 	return nil
 }
 
-func (r InvoiceDB) Delete(ctx context.Context, invoice postgres.InvoiceModel) error {
+func (r InvoiceDB) Delete(ctx context.Context, invoice model.InvoiceModel) error {
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE invoices SET
 		status = $1,

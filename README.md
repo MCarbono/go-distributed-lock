@@ -3,7 +3,6 @@
 ## 📜 Summary
 - [About](#About)
 - [Docs](#Docs)
-- [Libs/Dependencies](#Libs/Dependencies)
 - [Run](#Run)
 - [Tracing](#Tracing)
 
@@ -60,7 +59,6 @@ sequenceDiagram
     lock_database-->>-order_service: locks removed
     order_service-->>-client: order deleted
 ```
-
 ---
 <h4>Update order</h4>
 

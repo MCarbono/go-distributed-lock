@@ -1,6 +1,7 @@
 package order
 
 import (
+	database "distributed-lock/database/invoice"
 	"distributed-lock/locker"
 	"distributed-lock/order/controller"
 	"distributed-lock/order/postgres"
@@ -25,4 +26,17 @@ func Boot() (*gin.Engine, error) {
 	httpClient := http.DefaultClient
 	controller := controller.NewOrder(&repo, httpClient, lockManager)
 	return newRouter(controller), nil
+}
+
+func BootInvoice() (*gin.Engine, error) {
+	db, err := database.OpenDBInvoice()
+	if err != nil {
+		return nil, fmt.Errorf("failed open database: %w", err)
+	}
+	repo := repository.NewInvoiceDB(db)
+	client := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+	lockManager := locker.NewLockManager(*client)
+	return newRouterInvoice(controller.NewInvoice(repo, lockManager)), nil
 }

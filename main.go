@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"distributed-lock/invoice"
 	"distributed-lock/order"
 	"errors"
 	"fmt"
@@ -70,7 +69,7 @@ func newOrderServiceRouter(ch chan<- error, service *http.Server) {
 }
 
 func newInvoiceServiceRouter(ch chan<- error, service *http.Server) {
-	router, err := invoice.Boot()
+	router, err := order.BootInvoice()
 	if err != nil {
 		ch <- err
 		return

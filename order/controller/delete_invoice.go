@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"distributed-lock/invoice/postgres"
-	"distributed-lock/invoice/repository"
+	"database/sql"
+	"distributed-lock/model"
+	"distributed-lock/order/repository"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,13 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (c Invoice) UpdateInvoice(ctx *gin.Context) {
+func (c Invoice) DeleteInvoice(ctx *gin.Context) {
 	id := ctx.Param("id")
-	var body UpdateInvoiceInput
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, output{Err: err.Error(), Message: "error converting request body"})
-		return
-	}
 	locked, err := c.locker.ExistsLock(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, output{Err: err.Error()})
@@ -36,17 +32,17 @@ func (c Invoice) UpdateInvoice(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, output{Err: err.Error(), Message: "error trying to get the invoice"})
 		return
 	}
+	if invoice.Status == model.InvoiceStatusDeleted {
+		ctx.JSON(http.StatusNoContent, nil)
+		return
+	}
 	invoice.UpdatedAt = time.Now().UTC()
-	invoice.Status = postgres.InvoiceStatusUpdated
-	invoice.Total = body.Total
-	err = c.repo.Update(ctx, invoice)
+	invoice.DeletedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
+	invoice.Status = model.InvoiceStatusDeleted
+	err = c.repo.Delete(ctx, invoice)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, output{Err: err.Error(), Message: "internal server error"})
 		return
 	}
 	ctx.JSON(http.StatusNoContent, nil)
-}
-
-type UpdateInvoiceInput struct {
-	Total float64 `json:"total"`
 }

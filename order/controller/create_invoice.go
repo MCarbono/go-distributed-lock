@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"distributed-lock/invoice/postgres"
+	"distributed-lock/model"
 	"net/http"
 	"time"
 
@@ -16,10 +16,10 @@ func (c Invoice) CreateInvoice(ctx *gin.Context) {
 		return
 	}
 
-	invoice := postgres.InvoiceModel{
+	invoice := model.InvoiceModel{
 		ID:        uuid.NewString(),
 		UserID:    body.UserID,
-		Status:    postgres.InvoiceStatusCreated,
+		Status:    model.InvoiceStatusCreated,
 		Total:     body.Total,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
