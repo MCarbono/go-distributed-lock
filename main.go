@@ -24,19 +24,20 @@ func main() {
 	if err != nil {
 		panic(cfg)
 	}
+	fmt.Printf("Env variables loaded: %+v\n", cfg)
 
 	orderService := http.Server{Addr: fmt.Sprintf(":%s", cfg.OrderServerPort)}
 	invoiceService := http.Server{Addr: fmt.Sprintf(":%s", cfg.InvoiceServerPort)}
 
 	ch := make(chan error)
 	defer close(ch)
-	go newOrderServiceRouter(ch, &orderService)
+	go newOrderServiceRouter(ch, &orderService, cfg)
 	err = <-ch
 	if err != nil {
 		panic(err)
 	}
 
-	go newInvoiceServiceRouter(ch, &invoiceService)
+	go newInvoiceServiceRouter(ch, &invoiceService, cfg)
 	err = <-ch
 	if err != nil {
 		shutDownCtx, shutdowRelease := context.WithTimeout(context.Background(), 10*time.Second)
@@ -63,21 +64,8 @@ func main() {
 	fmt.Println("invoiceService terminated successfully")
 }
 
-func newOrderServiceRouter(ch chan<- error, service *http.Server) {
-	cfg := config.Config{
-		OrderDatabase: config.RelationalDatabaseOrderService{
-			Host:     "localhost",
-			Port:     "5432",
-			User:     "user",
-			Password: "password",
-			Name:     "order-postgres",
-		},
-		NonRelationalDatabase: config.NonRelationalDatabase{
-			Host: "localhost",
-			Port: "6379",
-		},
-	}
-	router, err := boot.Order(cfg)
+func newOrderServiceRouter(ch chan<- error, service *http.Server, cfg config.Config) {
+	router, err := boot.Order(cfg.OrderDatabase, cfg.NonRelationalDatabase)
 	if err != nil {
 		ch <- err
 		return
@@ -93,21 +81,8 @@ func newOrderServiceRouter(ch chan<- error, service *http.Server) {
 	}
 }
 
-func newInvoiceServiceRouter(ch chan<- error, service *http.Server) {
-	cfg := config.Config{
-		InvoiceDatabase: config.RelationalDatabaseInvoiceService{
-			Host:     "localhost",
-			Port:     "5433",
-			User:     "user",
-			Password: "password",
-			Name:     "invoice-postgres",
-		},
-		NonRelationalDatabase: config.NonRelationalDatabase{
-			Host: "localhost",
-			Port: "6379",
-		},
-	}
-	router, err := boot.Invoice(cfg)
+func newInvoiceServiceRouter(ch chan<- error, service *http.Server, cfg config.Config) {
+	router, err := boot.Invoice(cfg.InvoiceDatabase, cfg.NonRelationalDatabase)
 	if err != nil {
 		ch <- err
 		return

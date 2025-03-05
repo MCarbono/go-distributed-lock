@@ -26,10 +26,10 @@ type RelationalDatabaseOrderService struct {
 
 type RelationalDatabaseInvoiceService struct {
 	Host     string `envconfig:"INVOICE_DATABASE_HOST"`
-	Port     string `envconfig:"INVOICE_DATABASE_HOST"`
-	User     string `envconfig:"INVOICE_DATABASE_HOST"`
-	Password string `envconfig:"INVOICE_DATABASE_HOST"`
-	Name     string `envconfig:"INVOICE_DATABASE_HOST"`
+	Port     string `envconfig:"INVOICE_DATABASE_PORT"`
+	User     string `envconfig:"INVOICE_DATABASE_USER"`
+	Password string `envconfig:"INVOICE_DATABASE_PASSWORD"`
+	Name     string `envconfig:"INVOICE_DATABASE_NAME"`
 }
 
 type RelationalDatabase struct {
@@ -41,8 +41,8 @@ type RelationalDatabase struct {
 }
 
 type NonRelationalDatabase struct {
-	Host string
-	Port string
+	Host string `envconfig:"NON_RELATIONAL_DATABASE_HOST"`
+	Port string `envconfig:"NON_RELATIONAL_DATABASE_PORT"`
 }
 
 func LoadEnv(env string) (Config, error) {
@@ -54,6 +54,12 @@ func LoadEnv(env string) (Config, error) {
 
 	if err := envconfig.Process("", &cfg); err != nil {
 		log.Fatalf("Failed to parse env variables: %v", err)
+	}
+
+	if env == "production" {
+		cfg.NonRelationalDatabase.Host = "redis"
+		cfg.OrderDatabase.Host = "order-postgres"
+		cfg.InvoiceDatabase.Host = "invoice-postgres"
 	}
 
 	return cfg, nil

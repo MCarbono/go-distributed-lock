@@ -15,19 +15,19 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func Order(cfg config.Config) (*gin.Engine, error) {
+func Order(relationalDatabaseConfing config.RelationalDatabaseOrderService, nonRelationalDatabase config.NonRelationalDatabase) (*gin.Engine, error) {
 	db, err := database.OpenDB(config.RelationalDatabase{
-		Host:     cfg.OrderDatabase.Host,
-		Port:     cfg.OrderDatabase.Port,
-		User:     cfg.OrderDatabase.User,
-		Password: cfg.OrderDatabase.Password,
-		Name:     cfg.OrderDatabase.Name,
+		Host:     relationalDatabaseConfing.Host,
+		Port:     relationalDatabaseConfing.Port,
+		User:     relationalDatabaseConfing.User,
+		Password: relationalDatabaseConfing.Password,
+		Name:     relationalDatabaseConfing.Name,
 	}, order.MigrationsFS)
 	if err != nil {
 		return nil, fmt.Errorf("failed open database: %w", err)
 	}
 	client := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%s", cfg.NonRelationalDatabase.Host, cfg.NonRelationalDatabase.Port),
+		Addr: fmt.Sprintf("%s:%s", nonRelationalDatabase.Host, nonRelationalDatabase.Port),
 	})
 	lockManager := locker.NewLockManager(*client)
 	repo := repository.NewOrderDB(db)
@@ -36,20 +36,20 @@ func Order(cfg config.Config) (*gin.Engine, error) {
 	return newRouter(controller), nil
 }
 
-func Invoice(cfg config.Config) (*gin.Engine, error) {
+func Invoice(relationalDatabaseConfing config.RelationalDatabaseInvoiceService, nonRelationalDatabase config.NonRelationalDatabase) (*gin.Engine, error) {
 	db, err := database.OpenDB(config.RelationalDatabase{
-		Host:     cfg.InvoiceDatabase.Host,
-		Port:     cfg.InvoiceDatabase.Port,
-		User:     cfg.InvoiceDatabase.User,
-		Password: cfg.InvoiceDatabase.Password,
-		Name:     cfg.InvoiceDatabase.Name,
+		Host:     relationalDatabaseConfing.Host,
+		Port:     relationalDatabaseConfing.Port,
+		User:     relationalDatabaseConfing.User,
+		Password: relationalDatabaseConfing.Password,
+		Name:     relationalDatabaseConfing.Name,
 	}, invoice.MigrationsFS)
 	if err != nil {
 		return nil, fmt.Errorf("failed open database: %w", err)
 	}
 	repo := repository.NewInvoiceDB(db)
 	client := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%s", cfg.NonRelationalDatabase.Host, cfg.NonRelationalDatabase.Port),
+		Addr: fmt.Sprintf("%s:%s", nonRelationalDatabase.Host, nonRelationalDatabase.Port),
 	})
 	lockManager := locker.NewLockManager(*client)
 	return newRouterInvoice(controller.NewInvoice(repo, lockManager)), nil
