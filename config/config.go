@@ -60,6 +60,7 @@ func LoadEnv(env string) (Config, error) {
 		cfg.NonRelationalDatabase.Host = "redis"
 		cfg.OrderDatabase.Host = "order-postgres"
 		cfg.InvoiceDatabase.Host = "invoice-postgres"
+		cfg.InvoiceDatabase.Port = "5432"
 	}
 
 	return cfg, nil
