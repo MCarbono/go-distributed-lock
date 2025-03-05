@@ -16,6 +16,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const (
+	maxRetries    = 5
+	retryInternal = 2 * time.Second
+)
+
 func OpenDB(cfg config.RelationalDatabase, migrations embed.FS) (*sqlx.DB, error) {
 	db, err := sql.Open("postgres", fmt.Sprintf(
 		"host=%s port=%s user=%s dbname=%s password=%s sslmode=disable connect_timeout=10",
@@ -29,17 +34,24 @@ func OpenDB(cfg config.RelationalDatabase, migrations embed.FS) (*sqlx.DB, error
 		return nil, fmt.Errorf("opening connection: %w", err)
 	}
 
-	err = Migrate(db, migrations)
+	ctx, cancel := context.WithTimeout(context.Background(), 11*time.Second)
+	defer cancel()
+	for i := 0; i < maxRetries; i++ {
+		err = db.PingContext(ctx)
+		if err == nil {
+			break
+		}
+		if err != nil {
+			fmt.Printf("Connection ping failed (Attempt %d): %v\n", i+1, err)
+			time.Sleep(retryInternal)
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = db.PingContext(ctx)
+	err = Migrate(db, migrations)
 	if err != nil {
-		return nil, fmt.Errorf("pinging: %w", err)
+		return nil, err
 	}
 	return sqlx.NewDb(db, "postgres"), nil
 }
