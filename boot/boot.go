@@ -16,7 +16,13 @@ import (
 )
 
 func Order(cfg config.Config) (*gin.Engine, error) {
-	db, err := database.OpenDB(cfg.Database, order.MigrationsFS)
+	db, err := database.OpenDB(config.RelationalDatabase{
+		Host:     cfg.OrderDatabase.Host,
+		Port:     cfg.OrderDatabase.Port,
+		User:     cfg.OrderDatabase.User,
+		Password: cfg.OrderDatabase.Password,
+		Name:     cfg.OrderDatabase.Name,
+	}, order.MigrationsFS)
 	if err != nil {
 		return nil, fmt.Errorf("failed open database: %w", err)
 	}
@@ -31,7 +37,13 @@ func Order(cfg config.Config) (*gin.Engine, error) {
 }
 
 func Invoice(cfg config.Config) (*gin.Engine, error) {
-	db, err := database.OpenDB(cfg.Database, invoice.MigrationsFS)
+	db, err := database.OpenDB(config.RelationalDatabase{
+		Host:     cfg.InvoiceDatabase.Host,
+		Port:     cfg.InvoiceDatabase.Port,
+		User:     cfg.InvoiceDatabase.User,
+		Password: cfg.InvoiceDatabase.Password,
+		Name:     cfg.InvoiceDatabase.Name,
+	}, invoice.MigrationsFS)
 	if err != nil {
 		return nil, fmt.Errorf("failed open database: %w", err)
 	}

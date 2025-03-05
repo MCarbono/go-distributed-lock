@@ -44,5 +44,6 @@ func (c Invoice) UpdateInvoice(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, output{Err: err.Error(), Message: "internal server error"})
 		return
 	}
+	time.Sleep(2 * time.Second)
 	ctx.JSON(http.StatusNoContent, nil)
 }

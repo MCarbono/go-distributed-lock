@@ -20,13 +20,18 @@ var (
 
 func main() {
 	flag.Parse()
-	orderService := http.Server{Addr: ":3000"}
-	invoiceService := http.Server{Addr: ":3001"}
+	cfg, err := config.LoadEnv(*env)
+	if err != nil {
+		panic(cfg)
+	}
+
+	orderService := http.Server{Addr: fmt.Sprintf(":%s", cfg.OrderServerPort)}
+	invoiceService := http.Server{Addr: fmt.Sprintf(":%s", cfg.InvoiceServerPort)}
 
 	ch := make(chan error)
 	defer close(ch)
 	go newOrderServiceRouter(ch, &orderService)
-	err := <-ch
+	err = <-ch
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +65,7 @@ func main() {
 
 func newOrderServiceRouter(ch chan<- error, service *http.Server) {
 	cfg := config.Config{
-		Database: config.RelationalDatabase{
+		OrderDatabase: config.RelationalDatabaseOrderService{
 			Host:     "localhost",
 			Port:     "5432",
 			User:     "user",
@@ -90,7 +95,7 @@ func newOrderServiceRouter(ch chan<- error, service *http.Server) {
 
 func newInvoiceServiceRouter(ch chan<- error, service *http.Server) {
 	cfg := config.Config{
-		Database: config.RelationalDatabase{
+		InvoiceDatabase: config.RelationalDatabaseInvoiceService{
 			Host:     "localhost",
 			Port:     "5433",
 			User:     "user",

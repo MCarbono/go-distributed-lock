@@ -66,6 +66,6 @@ func (c Order) DeleteOrder(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errOutput{Err: err.Error(), Message: "error updating order into the database"})
 		return
 	}
-	time.Sleep(5 * time.Second)
+	time.Sleep(2 * time.Second)
 	ctx.JSON(http.StatusNoContent, nil)
 }
