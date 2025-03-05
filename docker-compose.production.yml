@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  web:
+    build: . 
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    depends_on:
+      - redis
+      - order-postgres
+      - invoice-postgres
+    networks:
+      - mynetwork
+    env_file:
+      - .env 
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    networks:
+     - mynetwork
+  order-postgres:
+    image: postgres:16-alpine
+    container_name: order-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order-postgres
+    volumes:
+      - order-postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+     - mynetwork
+
+  invoice-postgres:
+    image: postgres:16-alpine
+    container_name: invoice-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: invoice-postgres
+    volumes:
+      - invoice-postgres:/var/lib/postgresql/data
+    ports:
+      - 5433:5433
+    networks:
+     - mynetwork
+
+volumes:
+  redis_data:
+    driver: local
+  order-postgres:
+  invoice-postgres:
+
+networks:
+  mynetwork:
+    driver: bridge
