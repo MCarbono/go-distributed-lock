@@ -157,7 +157,7 @@ sequenceDiagram
 <a id="Endpoints"></a> 
 ## 💻 Endpoints
 
-In this section you will find all the curls for the requests.
+In this section you will find all the curls to make http requests for the service Order.
 
 Create Order
 
